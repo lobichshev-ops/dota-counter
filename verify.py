@@ -34,17 +34,30 @@ def main():
     slugs = [h["slug"] for h in d["heroes"]]
     print(f"иконок к проверке: {len(slugs)}")
 
+    img_dir = os.path.join(HERE, "img")
     bad = []
-    with ThreadPoolExecutor(max_workers=12) as pool:
-        for slug, res in pool.map(check_image, slugs):
-            if res != 200:
-                bad.append((slug, res))
+    total = 0
+    for slug in slugs:
+        p = os.path.join(img_dir, slug + ".webp")
+        if not os.path.exists(p):
+            bad.append((slug, "файла нет"))
+        elif os.path.getsize(p) < 500:
+            bad.append((slug, "подозрительно маленький: %d б" % os.path.getsize(p)))
+        else:
+            total += os.path.getsize(p)
     if bad:
         print("ПРОБЛЕМНЫЕ ИКОНКИ:")
         for slug, res in bad:
             print(f"  {slug}: {res}")
     else:
-        print("все иконки отдаются (200)")
+        print(f"все на месте, {total / 1024 / 1024:.2f} МБ" +
+              (f" ({total / len(slugs) / 1024:.1f} КБ на иконку)" if slugs else ""))
+
+    # лишние файлы в папке
+    extra = sorted(set(f[:-5] for f in os.listdir(img_dir) if f.endswith(".webp"))
+                   - set(slugs)) if os.path.isdir(img_dir) else []
+    if extra:
+        print("лишние файлы:", ", ".join(extra[:10]))
 
     html = open(os.path.join(HERE, "index.html"), encoding="utf-8").read()
     blocks = re.findall(r"<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>", html, re.S)

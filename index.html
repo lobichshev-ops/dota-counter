@@ -127,7 +127,7 @@
 (function(){
   const D = window.DOTA_DATA;
   const H = D.heroes, N = H.length;
-  const CDN = "https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/";
+  const CDN = "img/";   // иконки лежат рядом с сайтом, без внешних CDN
   const MAX = 5;
   const POSN = ["", "керри", "мид", "оффлейн", "софт-саппорт", "фулл-саппорт"];
   // насколько важно контрить врага на этой позиции (кор-позиции решают игру)
@@ -140,7 +140,7 @@
   let myPos = 0;        // выбранная своя позиция (0 = все)
 
   const $ = id => document.getElementById(id);
-  const img = i => CDN + H[i].slug + ".png";
+  const img = i => CDN + H[i].slug + ".webp";
   const topPos = i => {                       // любимая позиция героя
     const p = D.pos[i]; let best = 0;
     for (let k = 1; k < 5; k++) if (p[k] > p[best]) best = k;
