@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Контрпики Dota 2</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c232c; --line:#262e39;
+    --text:#e6e8ea; --dim:#8b96a5; --gold:#d9a441; --good:#4fbf7a; --bad:#e0575b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font:15px/1.45 "Segoe UI",system-ui,-apple-system,sans-serif}
+  a{color:var(--gold)}
+  header{padding:22px 20px 8px;max-width:1400px;margin:0 auto}
+  h1{margin:0;font-size:22px;letter-spacing:.3px;font-weight:650}
+  h1 span{color:var(--gold)}
+  .sub{color:var(--dim);font-size:13px;margin-top:4px}
+  main{max-width:1400px;margin:0 auto;padding:14px 20px 40px;
+    display:grid;grid-template-columns:1fr 440px;gap:18px;align-items:start}
+  @media (max-width:1050px){ main{grid-template-columns:1fr} }
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px}
+  .pad{padding:14px}
+
+  input[type=search]{width:100%;background:var(--panel2);border:1px solid var(--line);
+    border-radius:9px;color:var(--text);padding:10px 12px;font-size:14px;outline:none}
+  input[type=search]:focus{border-color:var(--gold)}
+
+  .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#5c6673;
+    font-weight:600;margin:12px 0 6px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:12px;padding:4px 10px;border-radius:999px;cursor:pointer;
+    background:var(--panel2);border:1px solid var(--line);color:var(--dim);user-select:none;
+    white-space:nowrap}
+  .chip:hover{color:var(--text)}
+  .chip.on{background:rgba(217,164,65,.16);border-color:var(--gold);color:var(--gold)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px;
+    max-height:calc(100vh - 430px);min-height:240px;overflow:auto;padding-right:4px;margin-top:10px}
+  .hero{position:relative;cursor:pointer;border-radius:8px;overflow:hidden;
+    background:var(--panel2);border:1px solid var(--line);transition:transform .08s,border-color .08s}
+  .hero:hover{transform:translateY(-2px);border-color:var(--gold)}
+  .hero img{display:block;width:100%;aspect-ratio:1.5/1;object-fit:cover;background:#0a0d11}
+  .hero .nm{font-size:10.5px;padding:3px 4px 4px;text-align:center;color:var(--dim);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hero.picked{opacity:.25;pointer-events:none}
+  .hero .fallback{display:none;width:100%;aspect-ratio:1.5/1;place-items:center;
+    font-size:20px;color:var(--dim);background:#0a0d11}
+  .hero .pbadge{position:absolute;top:3px;right:3px;background:rgba(10,13,17,.8);
+    color:var(--dim);font-size:9.5px;font-weight:700;border-radius:4px;padding:0 3px;line-height:14px}
+  .attr-str{border-bottom:2px solid #c94f4f} .attr-agi{border-bottom:2px solid #4fbf7a}
+  .attr-int{border-bottom:2px solid #4fa8e8} .attr-all{border-bottom:2px solid #b06fd6}
+
+  .slots{display:flex;gap:8px;flex-wrap:wrap;min-height:60px;align-items:center}
+  .slot{width:64px;height:44px;border-radius:7px;border:1px dashed var(--line);
+    background:rgba(255,255,255,.02);display:grid;place-items:center;color:#39424f;font-size:18px}
+  .pick{position:relative;width:64px;cursor:pointer}
+  .pick img{width:64px;height:44px;object-fit:cover;border-radius:7px;display:block;border:1px solid var(--line)}
+  .pick .x{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;
+    background:var(--bad);color:#fff;font-size:12px;line-height:18px;text-align:center;
+    opacity:0;transition:opacity .1s}
+  .pick:hover .x{opacity:1}
+  .posbadge{position:absolute;left:3px;bottom:3px;background:rgba(10,13,17,.88);
+    border:1px solid var(--gold);color:var(--gold);font-size:10px;font-weight:700;
+    border-radius:5px;padding:0 4px;line-height:15px;cursor:pointer}
+  .posbadge:hover{background:var(--gold);color:#111}
+
+  .res{margin-top:6px;display:flex;flex-direction:column;gap:6px}
+  .sect{margin-top:12px}
+  .sect h3{font-size:11px;letter-spacing:.5px;color:#5c6673;text-transform:uppercase;
+    margin:0 0 5px 2px;font-weight:600}
+  .row{display:flex;gap:10px;align-items:center;background:var(--panel2);
+    border:1px solid var(--line);border-radius:9px;padding:7px 9px}
+  .row .ico{width:56px;height:38px;border-radius:6px;object-fit:cover;flex:none;background:#0a0d11}
+  .row .body{flex:1;min-width:0}
+  .row .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+  .row .name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .score{font-variant-numeric:tabular-nums;font-weight:700;color:var(--good);font-size:14px}
+  .row .score.low{color:var(--dim)}
+  .row .parts{display:flex;flex-wrap:wrap;gap:3px 8px;margin-top:2px}
+  .part{font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums}
+  .part b{font-weight:600}
+  .part.pos b{color:#5cc98a} .part.neg b{color:#d97074}
+  .rel{font-size:10px;color:#5c6673;margin-top:2px}
+  .rel i{font-style:normal;color:#7d8797}
+  .empty{color:var(--dim);font-size:13px;padding:18px 2px;text-align:center}
+  .note{font-size:11.5px;color:#5c6673;line-height:1.5;margin-top:14px}
+  .note b{color:var(--dim)}
+  .hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .hdr h2{font-size:13px;margin:0;color:var(--dim);font-weight:600;text-transform:uppercase;
+    letter-spacing:.6px}
+  .clear{font-size:12px;color:var(--dim);cursor:pointer;background:none;border:none}
+  .clear:hover{color:var(--gold)}
+  ::-webkit-scrollbar{width:9px} ::-webkit-scrollbar-thumb{background:#2b3540;border-radius:5px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Контрпики <span>Dota 2</span></h1>
+  <div class="sub">Отметь героев врага и их позиции — покажу, кем и на какую позицию их ломать.</div>
+</header>
+
+<main>
+  <section class="card pad">
+    <input type="search" id="q" placeholder="Поиск героя…" autocomplete="off">
+    <div class="lbl">Моя позиция</div>
+    <div class="chips" id="mypos"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <aside class="card pad">
+    <div class="hdr">
+      <h2>Враги <span id="cnt" style="color:#39424f"></span></h2>
+      <button class="clear" id="clear">сбросить</button>
+    </div>
+    <div class="slots" id="slots"></div>
+    <div class="res" id="res"></div>
+    <div class="note" id="note"></div>
+  </aside>
+</main>
+
+<script src="data.js"></script>
+<script>
+(function(){
+  const D = window.DOTA_DATA;
+  const H = D.heroes, N = H.length;
+  const CDN = "https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/";
+  const MAX = 5;
+  const POSN = ["", "керри", "мид", "оффлейн", "софт-саппорт", "фулл-саппорт"];
+  // насколько важно контрить врага на этой позиции (кор-позиции решают игру)
+  const POS_W = [1.15, 1.15, 1.0, 0.9, 0.9];
+  const MIN_POS = 10;   // % игр героя на позиции, чтобы вообще её показывать
+
+  const byName = new Map(H.map((h, i) => [h.name.toLowerCase(), i]));
+  let enemies = [];     // индексы героев
+  let epos = [];        // позиция врага 1..5 (параллельно enemies)
+  let myPos = 0;        // выбранная своя позиция (0 = все)
+
+  const $ = id => document.getElementById(id);
+  const img = i => CDN + H[i].slug + ".png";
+  const topPos = i => {                       // любимая позиция героя
+    const p = D.pos[i]; let best = 0;
+    for (let k = 1; k < 5; k++) if (p[k] > p[best]) best = k;
+    return best + 1;
+  };
+  const bestPosList = i => D.pos[i]
+    .map((v, k) => ({ p: k + 1, v })).filter(x => x.v >= MIN_POS)
+    .sort((a, b) => b.v - a.v);
+  // две основные позиции героя: по ним и фильтруем выдачу, иначе герои
+  // вроде Pudge или Nature's Prophet будут висеть во всех пяти списках
+  const TOP2 = H.map((h, i) => bestPosList(i).slice(0, 2).map(x => x.p));
+  const canPlay = (i, p) => TOP2[i].includes(p);
+
+  // ---------- сетка героев ----------
+  function renderGrid(){
+    const q = $("q").value.trim().toLowerCase();
+    const g = $("grid");
+    g.innerHTML = "";
+    const frag = document.createDocumentFragment();
+    let shown = 0;
+    H.forEach((h, i) => {
+      if (q && !h.name.toLowerCase().includes(q)) return;
+      if (myPos && !canPlay(i, myPos)) return;
+      shown++;
+      const el = document.createElement("div");
+      el.className = "hero attr-" + (h.attr || "all") + (enemies.includes(i) ? " picked" : "");
+      const bp = bestPosList(i).slice(0, 2)
+        .map(x => "P" + x.p + " " + x.v + "%").join(" · ");
+      el.title = h.name + " — " + bp;
+      el.innerHTML =
+        '<img loading="lazy" src="' + img(i) + '" alt="' + h.name + '"' +
+        ' onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'grid\'">' +
+        '<div class="fallback">' + h.name[0] + '</div>' +
+        '<div class="pbadge">P' + topPos(i) + '</div>' +
+        '<div class="nm">' + h.name + '</div>';
+      el.onclick = () => addEnemy(i);
+      frag.appendChild(el);
+    });
+    if (!shown){
+      const e = document.createElement("div");
+      e.className = "empty";
+      e.style.gridColumn = "1/-1";
+      e.textContent = "Никого не нашлось";
+      frag.appendChild(e);
+    }
+    g.appendChild(frag);
+  }
+
+  function renderMyPos(){
+    const box = $("mypos");
+    box.innerHTML = "";
+    const mk = (val, text, title) => {
+      const c = document.createElement("div");
+      c.className = "chip" + (myPos === val ? " on" : "");
+      c.textContent = text;
+      if (title) c.title = title;
+      c.onclick = () => { myPos = val; renderAll(); };
+      box.appendChild(c);
+    };
+    mk(0, "все", "Не фильтровать");
+    for (let p = 1; p <= 5; p++) mk(p, String(p), "Позиция " + p + " — " + POSN[p]);
+  }
+
+  // ---------- выбранные враги ----------
+  function renderSlots(){
+    const box = $("slots");
+    box.innerHTML = "";
+    enemies.forEach((i, k) => {
+      const el = document.createElement("div");
+      el.className = "pick";
+      el.title = "Убрать " + H[i].name;
+      el.innerHTML = '<img src="' + img(i) + '"><div class="x">×</div>' +
+        '<div class="posbadge" title="Позиция врага — клик, чтобы сменить">' + epos[k] + '</div>';
+      el.querySelector("img").onclick = () => removeEnemy(k);
+      el.querySelector(".posbadge").onclick = ev => {
+        ev.stopPropagation();
+        epos[k] = epos[k] % 5 + 1;   // 1→2→3→4→5→1
+        renderAll();
+      };
+      box.appendChild(el);
+    });
+    for (let k = enemies.length; k < MAX; k++){
+      const s = document.createElement("div");
+      s.className = "slot";
+      s.textContent = "—";
+      box.appendChild(s);
+    }
+    $("cnt").textContent = enemies.length ? enemies.length + "/" + MAX : "";
+  }
+
+  function addEnemy(i){
+    if (enemies.includes(i) || enemies.length >= MAX) return;
+    enemies.push(i);
+    epos.push(topPos(i));
+    renderAll();
+  }
+  function removeEnemy(k){ enemies.splice(k, 1); epos.splice(k, 1); renderAll(); }
+
+  // ---------- скоринг ----------
+  // mu в логитах; при винрейте ~50% 1 логит ≈ 25 п.п.
+  function score(ci){
+    let s = 0, minGames = Infinity;
+    const parts = [];
+    for (let k = 0; k < enemies.length; k++){
+      const e = enemies[k];
+      const w = POS_W[epos[k] - 1];
+      const v = D.mu[ci][e] * 25 * w;
+      s += v;
+      minGames = Math.min(minGames, D.games[ci][e]);
+      parts.push({ e, v, raw: D.mu[ci][e] * 25, pos: epos[k] });
+    }
+    return { s, parts, minGames };
+  }
+
+  function rowEl(r){
+    const h = H[r.c];
+    const rel = r.minGames >= 500 ? "надёжно"
+              : r.minGames >= 200 ? "средне"
+              : "мало данных (" + r.minGames + " игр)";
+    const el = document.createElement("div");
+    el.className = "row";
+    const parts = r.parts.slice().sort((a, b) => b.v - a.v)
+      .map(p => '<span class="part ' + (p.v >= 0 ? "pos" : "neg") + '">' +
+                H[p.e].name.slice(0, 11) + ' <b>' + (p.v >= 0 ? "+" : "") +
+                p.v.toFixed(1) + '</b></span>').join("");
+    const mine = bestPosList(r.c).slice(0, 2)
+      .map(x => "P" + x.p + " " + x.v + "%").join(" · ");
+    el.innerHTML =
+      '<img class="ico" loading="lazy" src="' + img(r.c) + '" alt="">' +
+      '<div class="body">' +
+        '<div class="top"><span class="name">' + h.name + '</span>' +
+        '<span class="score' + (r.s < 0 ? " low" : "") + '">' +
+          (r.s >= 0 ? "+" : "") + r.s.toFixed(1) + ' п.п.</span></div>' +
+        '<div class="parts">' + parts + '</div>' +
+        '<div class="rel">играется: <i>' + mine + '</i> · ' + rel + '</div>' +
+      '</div>';
+    return el;
+  }
+
+  function resultsFor(pos){
+    const rows = [];
+    for (let c = 0; c < N; c++){
+      if (enemies.includes(c)) continue;
+      if (pos && !canPlay(c, pos)) continue;
+      rows.push(Object.assign({ c }, score(c)));
+    }
+    rows.sort((a, b) => b.s - a.s);
+    return rows;
+  }
+
+  function renderResults(){
+    const res = $("res");
+    res.innerHTML = "";
+    if (!enemies.length){
+      res.innerHTML = '<div class="empty">Пока никого не выбрал.<br>' +
+        'Нажми на героев слева — до пяти.<br>' +
+        'Клик по номеру на портрете меняет позицию врага.</div>';
+      return;
+    }
+
+    if (myPos){
+      const sect = document.createElement("div");
+      sect.className = "sect";
+      sect.innerHTML = '<h3>Позиция ' + myPos + ' — ' + POSN[myPos] + '</h3>';
+      resultsFor(myPos).slice(0, 10).forEach(r => sect.appendChild(rowEl(r)));
+      res.appendChild(sect);
+      return;
+    }
+
+    // без выбранной позиции — по всем пяти, по три кандидата
+    for (let p = 1; p <= 5; p++){
+      const rows = resultsFor(p).slice(0, 3);
+      if (!rows.length) continue;
+      const sect = document.createElement("div");
+      sect.className = "sect";
+      sect.innerHTML = '<h3>Позиция ' + p + ' — ' + POSN[p] + '</h3>';
+      rows.forEach(r => sect.appendChild(rowEl(r)));
+      res.appendChild(sect);
+    }
+  }
+
+  function renderNote(){
+    const m = D.meta;
+    $("note").innerHTML =
+      '<b>Как читать.</b> «п.п.» — на сколько процентных пунктов герой выигрывает ' +
+      'против этих врагов чаще, чем ожидается от его же среднего уровня (это именно ' +
+      'контр, а не «герой просто сильный»). Вес врага зависит от его позиции: контрить ' +
+      'керри и мидера важнее, чем саппортов.<br><br>' +
+      '<b>Позиции.</b> В API их нет — выведены из линии и нетворса: мид = 2, в безопасной ' +
+      'линии кто богаче = 1, второй = 5, в сложной кто богаче = 3, второй = 4. ' +
+      'Клик по номеру на портрете врага меняет его позицию. В выдаче — только герои, ' +
+      'для которых твоя позиция одна из двух основных: иначе Pudge и Nature\'s Prophet ' +
+      'висели бы во всех пяти списках сразу.<br><br>' +
+      '<b>Данные.</b> ' + m.observations.toLocaleString("ru-RU") + ' парных наблюдений, ' +
+      m.heroes + ' героев, срез ' + m.built + '. Источник — ' + m.source + '. ' +
+      'Сэмпл (~250 тыс. матчей) смещён в высокий MMR и покрывает все патчи сразу, ' +
+      'поэтому цифры — ориентир, а не истина.';
+  }
+
+  function renderAll(){ renderGrid(); renderSlots(); renderResults(); writeHash(); }
+
+  // ---------- ссылка на драфт (#Axe:3,Sniper:1) ----------
+  function readHash(){
+    if (!location.hash || location.hash.length < 2) return;
+    try {
+      decodeURIComponent(location.hash.slice(1)).split(",").forEach(chunk => {
+        const bits = chunk.trim().split(":");
+        const i = byName.get(bits[0].toLowerCase());
+        if (typeof i !== "number" || enemies.includes(i) || enemies.length >= MAX) return;
+        let p = parseInt(bits[1], 10);
+        if (!(p >= 1 && p <= 5)) p = topPos(i);
+        enemies.push(i); epos.push(p);
+      });
+    } catch (e) { /* битая ссылка — просто игнорируем */ }
+  }
+  function writeHash(){
+    try {
+      const h = enemies.map((i, k) => H[i].name + ":" + epos[k]).join(",");
+      history.replaceState(null, "", h ? "#" + encodeURIComponent(h) : location.href.split("#")[0]);
+    } catch (e) { /* file:// — не критично */ }
+  }
+
+  // ---------- клавиатура ----------
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape"){ enemies = []; epos = []; renderAll(); }
+    if (e.key === "Backspace" && document.activeElement !== $("q") && enemies.length){
+      enemies.pop(); epos.pop(); renderAll();
+    }
+  });
+  $("clear").onclick = () => { enemies = []; epos = []; renderAll(); };
+  $("q").oninput = renderGrid;
+
+  renderMyPos();
+  renderNote();
+  readHash();
+  renderAll();
+})();
+</script>
+</body>
+</html>

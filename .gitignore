@@ -1,0 +1,8 @@
+_syntax_check.js
+_shot.png
+_edgeprofile/
+__pycache__/
+*.pyc
+.DS_Store
+.token
+*.token
