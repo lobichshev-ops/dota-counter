@@ -35,7 +35,8 @@
     background:var(--panel2);border:1px solid var(--line);color:var(--dim);user-select:none;
     white-space:nowrap}
   .chip:hover{color:var(--text)}
-  .chip.on{background:rgba(217,164,65,.16);border-color:var(--gold);color:var(--gold)}
+  .chip.on{background:var(--gold);border-color:var(--gold);color:#101317;font-weight:700}
+  .chip.on:hover{color:#101317}
 
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px;
     max-height:calc(100vh - 430px);min-height:240px;overflow:auto;padding-right:4px;margin-top:10px}
@@ -340,7 +341,7 @@
       'поэтому цифры — ориентир, а не истина.';
   }
 
-  function renderAll(){ renderGrid(); renderSlots(); renderResults(); writeHash(); }
+  function renderAll(){ renderMyPos(); renderGrid(); renderSlots(); renderResults(); writeHash(); }
 
   // ---------- ссылка на драфт (#Axe:3,Sniper:1) ----------
   function readHash(){
