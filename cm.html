@@ -131,20 +131,46 @@
       else bans[d.side].push(d.hero);
     });
 
-    function col(side){
+    function pickSlots(side){
+      let out = "";
+      for (let k = 0; k < 5; k++){
+        const hero = picks[side][k];
+        const isNext = cur && cur.side === side && cur.type === "pick" &&
+                       k === picks[side].length;
+        if (hero === undefined){
+          out += '<div class="dslot empty' + (isNext ? " next" : "") + '"></div>';
+        } else {
+          out += '<img class="dslot" src="' + A.img(hero) + '" title="' + H[hero].name + '">';
+        }
+      }
+      return out;
+    }
+
+    function banSlots(side){
+      let out = "";
+      for (let k = 0; k < 7; k++){
+        const hero = bans[side][k];
+        const isNext = cur && cur.side === side && cur.type === "ban" &&
+                       k === bans[side].length;
+        if (hero === undefined){
+          out += '<div class="bslot empty' + (isNext ? " next" : "") + '"></div>';
+        } else {
+          out += '<img class="bslot" src="' + A.img(hero) + '" title="бан: ' + H[hero].name + '">';
+        }
+      }
+      return out;
+    }
+
+    function sideHTML(side){
       const active = cur && cur.side === side ? " active" : "";
-      let ps = picks[side].map(function(h){
-        return '<img class="cmpick" src="' + A.img(h) + '" title="' + H[h].name + '">';
-      }).join("");
-      for (let k = picks[side].length; k < 5; k++) ps += '<div class="cmpick empty"></div>';
-      const bs = bans[side].map(function(h){
-        return '<img class="cmban" src="' + A.img(h) + '" title="бан: ' + H[h].name + '">';
-      }).join("");
-      return '<div class="cmteam ' + side + active + '">' +
-        '<h4>' + sideName(side) + '<span>' +
+      const bansCol = '<div class="dcol">' + banSlots(side) + '</div>';
+      const picksCol = '<div class="dcol">' + pickSlots(side) + '</div>';
+      // Radiant: баны слева от пиков, Dire — наоборот, как в игре
+      const inner = side === "rad" ? bansCol + picksCol : picksCol + bansCol;
+      return '<div class="dside ' + side + active + '">' +
+        '<h4>' + sideName(side) + '<span>' + picks[side].length + '/5 · ' +
           (side === firstPick ? "первый пик" : "второй пик") + '</span></h4>' +
-        '<div class="cmpicks">' + ps + '</div>' +
-        '<div class="cmbans">' + (bs || '<span class="cmnone">банов нет</span>') + '</div>' +
+        '<div class="dcols">' + inner + '</div>' +
         '</div>';
     }
 
@@ -160,7 +186,7 @@
     }
 
     $("board").innerHTML = head +
-      '<div class="cmteams">' + col("rad") + col("dir") + '</div>' +
+      '<div class="draft">' + sideHTML("rad") + sideHTML("dir") + '</div>' +
       '<div class="cmtools">' +
         '<button id="undo"' + (draft.length ? "" : " disabled") + '>← отменить</button>' +
         '<button id="reset">сбросить драфт</button>' +

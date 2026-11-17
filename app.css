@@ -92,20 +92,31 @@ input[type=search]:focus{border-color:var(--gold)}
 .cmstep .tag.ban{background:rgba(224,87,91,.15);color:#e0575b;border:1px solid rgba(224,87,91,.4)}
 .cmstep .tag.pick{background:rgba(79,191,122,.15);color:#4fbf7a;border:1px solid rgba(79,191,122,.4)}
 .cmstep .tag.done{background:var(--panel2);color:var(--dim);border:1px solid var(--line)}
-.cmteams{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.cmteam{border:1px solid var(--line);border-radius:9px;padding:7px 8px;background:var(--panel2)}
-.cmteam.active{border-color:var(--gold);box-shadow:inset 0 0 0 1px rgba(217,164,65,.25);
+/* доска драфта — как на экране CM в самой игре: пики двумя колонками,
+   баны снаружи (Radiant слева, Dire справа) */
+.draft{display:flex;gap:8px;align-items:flex-start;margin-bottom:9px}
+.dside{flex:1;border:1px solid var(--line);border-radius:9px;padding:6px;background:var(--panel2)}
+.dside.rad{border-top:2px solid var(--rad)}
+.dside.dir{border-top:2px solid var(--dir)}
+.dside.active{border-color:var(--gold);border-top-color:var(--gold);
   background:rgba(217,164,65,.05)}
-.cmteam h4{margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:.3px;
+.dside h4{margin:0 0 6px;font-size:11.5px;font-weight:700;letter-spacing:.3px;
   display:flex;justify-content:space-between;align-items:baseline}
-.cmteam.rad h4{color:var(--rad)} .cmteam.dir h4{color:var(--dir)}
-.cmteam h4 span{font-size:9.5px;font-weight:400;color:#5c6673}
-.cmpicks{display:flex;gap:3px}
-.cmpick{width:34px;height:23px;border-radius:4px;object-fit:cover;background:#0a0d11;display:block}
-.cmpick.empty{border:1px dashed var(--line);background:rgba(255,255,255,.02)}
-.cmbans{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;min-height:17px}
-.cmban{width:22px;height:15px;border-radius:3px;object-fit:cover;opacity:.4;filter:grayscale(1)}
-.cmnone{font-size:9.5px;color:#39424f}
+.dside.rad h4{color:var(--rad)} .dside.dir h4{color:var(--dir)}
+.dside h4 span{font-size:9px;font-weight:400;color:#5c6673}
+.dcols{display:flex;gap:5px;justify-content:center;align-items:flex-start}
+.dcol{display:flex;flex-direction:column;gap:3px;flex:none}
+.dslot{width:78px;height:46px;border-radius:5px;object-fit:cover;display:block;
+  background:#0a0d11;border:1px solid #20272f}
+.dslot.empty{border:1px dashed var(--line);background:rgba(255,255,255,.02)}
+.bslot{width:26px;height:16px;border-radius:3px;object-fit:cover;display:block;
+  background:#0a0d11;border:1px solid #20272f}
+.bslot.empty{border:1px dashed var(--line);background:rgba(255,255,255,.02)}
+.next{border-color:var(--gold) !important;
+  box-shadow:0 0 0 1px rgba(217,164,65,.55)}
+@media (max-width:520px){
+  .dslot{width:64px;height:38px} .bslot{width:22px;height:14px}
+}
 .cmtools{display:flex;gap:6px;margin-top:9px}
 .cmtools button{flex:1;font-size:11.5px;padding:5px 8px;border-radius:7px;cursor:pointer;
   background:var(--panel2);border:1px solid var(--line);color:var(--dim)}
