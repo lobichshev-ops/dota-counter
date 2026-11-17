@@ -65,7 +65,7 @@
 
       if (h.attr !== lastAttr){
         const head = document.createElement("div");
-        head.className = "agroup";
+        head.className = "agroup " + (h.attr || "all");
         head.textContent = attrLabel(h.attr);
         frag.appendChild(head);
         lastAttr = h.attr;

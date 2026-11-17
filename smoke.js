@@ -53,3 +53,47 @@ ban.sort((a, b) => b.s - a.s);
 console.log("\nкого банить против нашего Anti-Mage (топ-5):");
 ban.slice(0, 5).forEach(r => console.log("  " + A.H[r.c].name.padEnd(20) +
   "+" + r.s.toFixed(1)));
+
+// --- отрисовка сетки на минимальном DOM-заглушке: проверяем группы по атрибуту ---
+const created = [];
+function mkEl() {
+  const el = {
+    className: "", textContent: "", title: "", innerHTML: "", style: {},
+    children: [],
+    appendChild(c) {
+      if (c && c.__frag) this.children.push(...c.children);
+      else this.children.push(c);
+    },
+    querySelector() { return null; }
+  };
+  created.push(el);
+  return el;
+}
+global.document = {
+  createElement: mkEl,
+  createDocumentFragment() {
+    return { __frag: true, children: [], appendChild(c) { this.children.push(c); } };
+  }
+};
+
+function drawGrid(cfg) {
+  created.length = 0;
+  const root = mkEl();
+  A.grid(root, Object.assign({ q: "", pos: 0, taken: new Set(), onPick() {} }, cfg));
+  return {
+    total: created.filter(e => e.className.indexOf("hero") === 0).length,
+    heads: created.filter(e => e.className.indexOf("agroup") === 0)
+      .map(e => e.className.replace("agroup ", "") + ":" + e.textContent)
+  };
+}
+
+const full = drawGrid({});
+console.log("\nсетка без фильтров: героев " + full.total);
+console.log("  заголовки: " + full.heads.join(" | "));
+
+const onlyStr = drawGrid({ q: "axe" });
+console.log("поиск 'axe': героев " + onlyStr.total + ", заголовки: " + onlyStr.heads.join(" | "));
+
+const pos5 = drawGrid({ pos: 5 });
+console.log("фильтр позиции 5: героев " + pos5.total + ", заголовки: " + pos5.heads.join(" | "));
+

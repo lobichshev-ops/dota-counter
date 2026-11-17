@@ -43,9 +43,18 @@ input[type=search]:focus{border-color:var(--gold)}
 /* сетка героев */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px;
   max-height:calc(100vh - 480px);min-height:200px;overflow:auto;padding-right:4px;margin-top:10px}
-.agroup{grid-column:1/-1;font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;
-  color:#5c6673;font-weight:700;margin:10px 0 0;padding-left:2px}
+.agroup{grid-column:1/-1;font-size:11px;text-transform:uppercase;letter-spacing:.9px;
+  color:#5c6673;font-weight:700;margin:12px 0 2px;padding:3px 0 3px 9px;
+  border-left:3px solid transparent;border-radius:3px}
 .agroup:first-child{margin-top:0}
+.agroup.str{color:#e36666;border-left-color:#c94f4f;
+  background:linear-gradient(90deg,rgba(201,79,79,.16),transparent 70%)}
+.agroup.agi{color:#5fd28c;border-left-color:#4fbf7a;
+  background:linear-gradient(90deg,rgba(79,191,122,.16),transparent 70%)}
+.agroup.int{color:#5fb1ec;border-left-color:#4fa8e8;
+  background:linear-gradient(90deg,rgba(79,168,232,.16),transparent 70%)}
+.agroup.all{color:#c489e8;border-left-color:#b06fd6;
+  background:linear-gradient(90deg,rgba(176,111,214,.16),transparent 70%)}
 .hero{position:relative;cursor:pointer;border-radius:8px;overflow:hidden;
   background:var(--panel2);border:1px solid var(--line);transition:transform .08s,border-color .08s}
 .hero:hover{transform:translateY(-2px);border-color:var(--gold)}
