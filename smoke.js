@@ -1,57 +1,55 @@
-// Проверка data.js и выдачи с учётом позиций (запускается node'ом, не в браузере)
+// Проверка app.js и данных без браузера (node)
 const path = require("path");
 global.window = {};
 require(path.join(__dirname, "data.js"));
-const D = window.DOTA_DATA;
+require(path.join(__dirname, "app.js"));
+const A = window.DOTA;
 
-const POSN = ["", "керри", "мид", "оффлейн", "софт-саппорт", "фулл-саппорт"];
-const POS_W = [1.15, 1.15, 1.0, 0.9, 0.9];
-const MIN_POS = 10;
+console.log("героев:", A.N, "| данных:", A.D.meta.built);
 
-console.log("meta:", JSON.stringify(D.meta));
-console.log("heroes:", D.heroes.length, "| pos:", D.pos.length, "x", D.pos[0].length);
-
-const byName = new Map(D.heroes.map((h, i) => [h.name.toLowerCase(), i]));
-const pct = i => D.pos[i].map((v, k) => `P${k + 1}:${v}%`).join(" ");
-const bestPos = i => D.pos[i].map((v, k) => ({ p: k + 1, v }))
-  .filter(x => x.v >= MIN_POS).sort((a, b) => b.v - a.v);
-const TOP2 = D.heroes.map((h, i) => bestPos(i).slice(0, 2).map(x => x.p));
-const canPlay = (i, p) => TOP2[i].includes(p);
-
-console.log("\nпозиции нескольких героев:");
-for (const n of ["Anti-Mage", "Invoker", "Axe", "Crystal Maiden", "Pudge", "Lifestealer"]) {
-  const i = byName.get(n.toLowerCase());
-  console.log("  " + n.padEnd(16) + pct(i));
+// --- сортировка по атрибуту ---
+const groups = [];
+for (const i of A.ORDER) {
+  const a = A.H[i].attr;
+  if (groups[groups.length - 1] !== a) groups.push(a);
 }
+console.log("порядок групп:", groups.join(" → "));
 
-function recommend(enemies, myPos) {
-  const idx = enemies.map(([n]) => byName.get(n.toLowerCase()));
-  const pos = enemies.map(([, p]) => p);
-  const rows = [];
-  for (let c = 0; c < D.heroes.length; c++) {
-    if (idx.includes(c)) continue;
-    if (myPos && !canPlay(c, myPos)) continue;
-    let s = 0, mg = Infinity;
-    for (let k = 0; k < idx.length; k++) {
-      s += D.mu[c][idx[k]] * 25 * POS_W[pos[k] - 1];
-      mg = Math.min(mg, D.games[c][idx[k]]);
-    }
-    rows.push([s, D.heroes[c].name, mg]);
-  }
-  rows.sort((a, b) => b[0] - a[0]);
-  return rows;
+const counts = {};
+for (const i of A.ORDER) counts[A.H[i].attr] = (counts[A.H[i].attr] || 0) + 1;
+console.log("по атрибутам:", Object.entries(counts).map(([k, v]) => k + "=" + v).join(", "));
+
+const contiguous = new Set(groups).size === groups.length;
+console.log("группы не перемешаны:", contiguous ? "да" : "НЕТ");
+
+const first = A.ORDER.slice(0, 3).map(i => A.H[i].name + " (" + A.H[i].attr + ")");
+console.log("первые в сетке:", first.join(", "));
+
+// --- позиции ---
+const avail = [1, 2, 3, 4, 5].map(p => A.TOP2.filter(t => t.includes(p)).length);
+console.log("героев на позициях 1-5:", avail.join(" / "));
+
+// --- скоринг на примере ---
+const byName = A.byName;
+const enemies = ["Axe", "Sniper", "Lifestealer"].map(n => byName.get(n.toLowerCase()));
+const rows = [];
+for (let c = 0; c < A.N; c++) {
+  if (enemies.includes(c)) continue;
+  rows.push(A.score(c, enemies, null));
 }
+rows.sort((a, b) => b.s - a.s);
+console.log("\nтоп-5 против Axe + Sniper + Lifestealer:");
+rows.slice(0, 5).forEach(r => console.log("  " + A.H[r.c].name.padEnd(20) +
+  (r.s >= 0 ? "+" : "") + r.s.toFixed(1) + " п.п."));
 
-const comp = [["Axe", 3], ["Sniper", 1], ["Pudge", 4], ["Crystal Maiden", 5], ["Lifestealer", 1]];
-console.log("\nдрафт: " + comp.map(([n, p]) => n + "(P" + p + ")").join(", "));
-
-for (let p = 1; p <= 5; p++) {
-  const rows = recommend(comp, p).slice(0, 3);
-  console.log("\n  позиция " + p + " (" + POSN[p] + "):");
-  rows.forEach(r => console.log("    " + r[1].padEnd(18) +
-    (r[0] >= 0 ? "+" : "") + r[0].toFixed(1) + " п.п.  min " + r[2] + " игр"));
+// --- бан: кто контрит наш пик ---
+const own = [byName.get("anti-mage")];
+const ban = [];
+for (let c = 0; c < A.N; c++) {
+  if (own.includes(c)) continue;
+  ban.push(A.score(c, own, null));
 }
-
-// сколько героев вообще доступно на каждой позиции
-const avail = [1, 2, 3, 4, 5].map(p => TOP2.filter(t => t.includes(p)).length);
-console.log("\nгероев с этой позицией в основных двух: " + avail.join(" / "));
+ban.sort((a, b) => b.s - a.s);
+console.log("\nкого банить против нашего Anti-Mage (топ-5):");
+ban.slice(0, 5).forEach(r => console.log("  " + A.H[r.c].name.padEnd(20) +
+  "+" + r.s.toFixed(1)));

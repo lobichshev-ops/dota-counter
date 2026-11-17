@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Captain's Mode — Контрпики Dota 2</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header>
+  <h1>Captain's <span>Mode</span></h1>
+  <div class="sub">Двадцать четыре шага пиков и банов с подсказками на каждом ходу.</div>
+  <div class="nav">
+    <a href="index.html">← Обычный режим</a>
+    <a class="active" href="cm.html">Captain's Mode</a>
+  </div>
+</header>
+
+<main>
+  <section class="card pad">
+    <div class="chips" id="firstpick"></div>
+    <input type="search" id="q" placeholder="Поиск героя…" autocomplete="off">
+    <div class="lbl">Моя позиция</div>
+    <div class="chips" id="mypos"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <aside class="card pad">
+    <div class="hdr">
+      <h2>Драфт</h2>
+      <button class="clear" id="clear">сбросить</button>
+    </div>
+    <div id="board"></div>
+    <div class="res" id="res"></div>
+    <div class="note" id="note"></div>
+  </aside>
+</main>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script>
+(function(){
+  "use strict";
+  const A = window.DOTA, H = A.H, N = A.N, POSN = A.POSN;
+
+  // Порядок Captain's Mode по патчу 7.41f: 24 шага, 14 банов и 10 пиков.
+  // 7.34 переделал структуру фаз, 7.40 переставил баны в первой и третьей.
+  // "first" — команда, которая берёт первой (её выбирает пользователь).
+  const CM_ORDER = [
+    ["first","ban"],  ["first","ban"],  ["second","ban"], ["second","ban"],
+    ["first","ban"],  ["second","ban"], ["second","ban"],
+    ["first","pick"], ["second","pick"],
+    ["first","ban"],  ["first","ban"],  ["second","ban"],
+    ["second","pick"],["first","pick"], ["first","pick"], ["second","pick"],
+    ["second","pick"],["first","pick"],
+    ["first","ban"],  ["second","ban"], ["first","ban"],  ["second","ban"],
+    ["first","pick"], ["second","pick"]
+  ];
+
+  let firstPick = "rad";   // кто берёт первым
+  let myPos = 0;
+  let draft = [];          // [{side, type, hero}]
+
+  const $ = id => document.getElementById(id);
+  const sideName = s => s === "rad" ? "Radiant" : "Dire";
+  const other = s => s === "rad" ? "dir" : "rad";
+  const takenSet = () => new Set(draft.map(d => d.hero));
+
+  function cmActions(){
+    return CM_ORDER.map(function(step){
+      return { side: step[0] === "first" ? firstPick : other(firstPick), type: step[1] };
+    });
+  }
+
+  function renderFirstPick(){
+    const box = $("firstpick");
+    box.innerHTML = "";
+    const lab = document.createElement("span");
+    lab.className = "lbl";
+    lab.style.cssText = "margin:0 6px 0 0";
+    lab.textContent = "первый пик";
+    box.appendChild(lab);
+    ["rad", "dir"].forEach(function(s){
+      const c = document.createElement("div");
+      c.className = "chip " + s + (firstPick === s ? " on" : "");
+      c.textContent = sideName(s);
+      c.onclick = () => { if (firstPick !== s){ firstPick = s; draft = []; renderAll(); } };
+      box.appendChild(c);
+    });
+  }
+
+  function renderMyPos(){
+    const box = $("mypos");
+    box.innerHTML = "";
+    const mk = function(val, text, title){
+      const c = document.createElement("div");
+      c.className = "chip" + (myPos === val ? " on" : "");
+      c.textContent = text;
+      if (title) c.title = title;
+      c.onclick = () => { myPos = val; renderAll(); };
+      box.appendChild(c);
+    };
+    mk(0, "все", "Не фильтровать");
+    for (let p = 1; p <= 5; p++) mk(p, String(p), "Позиция " + p + " — " + POSN[p]);
+  }
+
+  function renderGrid(){
+    A.grid($("grid"), {
+      q: $("q").value, pos: myPos, taken: takenSet(),
+      onPick: addDraft
+    });
+  }
+
+  function addDraft(i){
+    const acts = cmActions();
+    if (draft.length >= acts.length) return;
+    if (draft.some(d => d.hero === i)) return;
+    const a = acts[draft.length];
+    draft.push({ side: a.side, type: a.type, hero: i });
+    renderAll();
+  }
+
+  function renderBoard(){
+    const acts = cmActions();
+    const cur = acts[draft.length] || null;
+    const picks = { rad: [], dir: [] };
+    const bans = { rad: [], dir: [] };
+    draft.forEach(function(d){
+      if (d.type === "pick") picks[d.side].push(d.hero);
+      else bans[d.side].push(d.hero);
+    });
+
+    function col(side){
+      const active = cur && cur.side === side ? " active" : "";
+      let ps = picks[side].map(function(h){
+        return '<img class="cmpick" src="' + A.img(h) + '" title="' + H[h].name + '">';
+      }).join("");
+      for (let k = picks[side].length; k < 5; k++) ps += '<div class="cmpick empty"></div>';
+      const bs = bans[side].map(function(h){
+        return '<img class="cmban" src="' + A.img(h) + '" title="бан: ' + H[h].name + '">';
+      }).join("");
+      return '<div class="cmteam ' + side + active + '">' +
+        '<h4>' + sideName(side) + '<span>' +
+          (side === firstPick ? "первый пик" : "второй пик") + '</span></h4>' +
+        '<div class="cmpicks">' + ps + '</div>' +
+        '<div class="cmbans">' + (bs || '<span class="cmnone">банов нет</span>') + '</div>' +
+        '</div>';
+    }
+
+    let head;
+    if (!cur){
+      head = '<div class="cmstep"><span>Драфт собран · ' + draft.length + ' из ' +
+             acts.length + ' шагов</span><span class="tag done">готово</span></div>';
+    } else {
+      head = '<div class="cmstep"><span>Шаг <b>' + (draft.length + 1) + '</b> из ' +
+             acts.length + ' · <b>' + sideName(cur.side) + '</b></span>' +
+             '<span class="tag ' + cur.type + '">' +
+             (cur.type === "ban" ? "бан" : "пик") + '</span></div>';
+    }
+
+    $("board").innerHTML = head +
+      '<div class="cmteams">' + col("rad") + col("dir") + '</div>' +
+      '<div class="cmtools">' +
+        '<button id="undo"' + (draft.length ? "" : " disabled") + '>← отменить</button>' +
+        '<button id="reset">сбросить драфт</button>' +
+      '</div>';
+
+    const u = $("undo");
+    if (u) u.onclick = () => { draft.pop(); renderAll(); };
+    $("reset").onclick = () => { draft = []; renderAll(); };
+
+    return { cur: cur, picks: picks };
+  }
+
+  function renderAdvice(cur, picks){
+    const res = $("res");
+    res.innerHTML = "";
+    if (!cur){
+      res.innerHTML = '<div class="empty">Драфт собран.<br>' +
+        'Можно разобрать ходы кнопкой «← отменить» или начать заново.</div>';
+      return;
+    }
+
+    const mine = picks[cur.side];
+    const theirs = picks[other(cur.side)];
+    const taken = takenSet();
+
+    const head = document.createElement("div");
+    head.className = "lbl";
+    head.style.cssText = "margin:2px 0 0";
+    res.appendChild(head);
+
+    /* ---------- пик ---------- */
+    if (cur.type === "pick"){
+      head.textContent = theirs.length
+        ? "Кого брать за " + sideName(cur.side) + " — против " + theirs.length + " вражеских"
+        : "Свободный пик — врагов ещё нет";
+
+      const covered = new Set(mine.map(A.topPos));
+      const open = [1, 2, 3, 4, 5].filter(p => !covered.has(p));
+
+      if (myPos && open.indexOf(myPos) === -1){
+        const e = document.createElement("div");
+        e.className = "empty";
+        e.textContent = "Позиция " + myPos + " уже закрыта у " + sideName(cur.side) +
+          ". Выбери «все», чтобы увидеть остальные.";
+        res.appendChild(e);
+        return;
+      }
+
+      function section(p, limit){
+        const rows = [];
+        for (let c = 0; c < N; c++){
+          if (taken.has(c) || !A.canPlay(c, p)) continue;
+          if (theirs.length) rows.push(A.score(c, theirs, null));
+          else rows.push({ c: c, s: A.D.overall[c] - 50, parts: [], minGames: Infinity });
+        }
+        rows.sort((a, b) => b.s - a.s);
+        if (!rows.length) return;
+
+        const sect = document.createElement("div");
+        sect.className = "sect";
+        sect.innerHTML = '<h3>Позиция ' + p + ' — ' + POSN[p] + '</h3>';
+        rows.slice(0, limit).forEach(function(r){
+          sect.appendChild(A.rowEl(r, theirs.length ? {} : {
+            hint: "винрейт " + (50 + r.s).toFixed(1) + "%"
+          }));
+        });
+        res.appendChild(sect);
+      }
+
+      if (myPos) section(myPos, 10);
+      else open.forEach(p => section(p, 3));
+      return;
+    }
+
+    /* ---------- бан ---------- */
+    head.textContent = "Кого банить за " + sideName(cur.side);
+
+    const rows = [];
+    for (let c = 0; c < N; c++){
+      if (taken.has(c)) continue;
+      if (mine.length){
+        // чем сильнее герой контрит уже взятых своих — тем нужнее бан
+        const sc = A.score(c, mine, null);
+        rows.push(sc);
+      } else {
+        // своих героев ещё нет — баним тех, кто широко контрит многих
+        let power = 0;
+        for (let j = 0; j < N; j++) if (c !== j && A.D.mu[c][j] > 0) power += A.D.mu[c][j];
+        rows.push({ c: c, s: power * 25, parts: [], minGames: Infinity });
+      }
+    }
+    rows.sort((a, b) => b.s - a.s);
+
+    const sect = document.createElement("div");
+    sect.className = "sect";
+    sect.innerHTML = '<h3>' + (mine.length
+      ? "насколько сильно контрит твоих героев"
+      : "универсальный бан — широко контрит многих") + '</h3>';
+    rows.slice(0, 10).forEach(r => sect.appendChild(A.rowEl(r, { ban: true })));
+    res.appendChild(sect);
+  }
+
+  function renderNote(){
+    const m = A.D.meta;
+    $("note").innerHTML =
+      '<b>Порядок.</b> По патчу 7.41f: 24 шага, по 7 банов и 5 пиков на команду. ' +
+      'Клик по герою слева записывает его на текущий шаг.<br><br>' +
+      '<b>Советы.</b> На пике — контры против уже выбранных врагов с учётом того, ' +
+      'какие позиции у тебя ещё не закрыты. На бане — герои, сильнее всего контрящие ' +
+      'твоих; если пиков ещё нет, показываю универсальные баны.<br><br>' +
+      '<b>Чего нет.</b> Синергии внутри команды — данных о парах «герой + герой» в одной ' +
+      'команде нет, только противостояния.<br><br>' +
+      '<b>Данные.</b> ' + m.observations.toLocaleString("ru-RU") + ' парных наблюдений, ' +
+      m.heroes + ' героев, срез ' + m.built + '. Сэмпл (~250 тыс. матчей) смещён в ' +
+      'высокий MMR, поэтому цифры — ориентир.';
+  }
+
+  function renderAll(){
+    renderFirstPick();
+    renderMyPos();
+    renderGrid();
+    const b = renderBoard();
+    renderAdvice(b.cur, b.picks);
+    renderNote();
+    writeHash();
+  }
+
+  function readHash(){
+    const raw = location.hash.slice(1);
+    if (!raw) return;
+    try {
+      const parts = decodeURIComponent(raw).split(",");
+      if (parts[0] !== "cm") return;
+      firstPick = parts[1] === "dir" ? "dir" : "rad";
+      const acts = cmActions();
+      parts.slice(2).forEach(function(tok, k){
+        const hero = parseInt(tok, 10);
+        if (!(hero >= 0 && hero < N) || k >= acts.length) return;
+        if (draft.some(d => d.hero === hero)) return;
+        draft.push({ side: acts[k].side, type: acts[k].type, hero: hero });
+      });
+    } catch (e) { /* битая ссылка — игнорируем */ }
+  }
+
+  function writeHash(){
+    try {
+      const h = "cm," + firstPick + (draft.length
+        ? "," + draft.map(function(d){ return d.hero; }).join(",") : "");
+      history.replaceState(null, "", "#" + encodeURIComponent(h));
+    } catch (e) { /* file:// — не критично */ }
+  }
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape"){ draft = []; renderAll(); return; }
+    if (e.key === "Backspace" && document.activeElement !== $("q") && draft.length){
+      draft.pop(); renderAll();
+    }
+  });
+  $("clear").onclick = () => { draft = []; renderAll(); };
+  $("q").oninput = renderGrid;
+
+  readHash();
+  renderAll();
+})();
+</script>
+</body>
+</html>

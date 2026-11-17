@@ -1,0 +1,134 @@
+:root{
+  --bg:#0e1116; --panel:#161b22; --panel2:#1c232c; --line:#262e39;
+  --text:#e6e8ea; --dim:#8b96a5; --gold:#d9a441; --good:#4fbf7a; --bad:#e0575b;
+  --rad:#4fbf7a; --dir:#e0575b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+  font:15px/1.45 "Segoe UI",system-ui,-apple-system,sans-serif}
+a{color:var(--gold)}
+header{padding:22px 20px 8px;max-width:1400px;margin:0 auto}
+h1{margin:0;font-size:22px;letter-spacing:.3px;font-weight:650}
+h1 span{color:var(--gold)}
+.sub{color:var(--dim);font-size:13px;margin-top:4px}
+.nav{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.nav a{font-size:12.5px;text-decoration:none;padding:5px 12px;border-radius:999px;
+  border:1px solid var(--line);background:var(--panel2);color:var(--dim)}
+.nav a:hover{color:var(--gold);border-color:var(--gold)}
+.nav a.active{color:var(--gold);border-color:var(--gold);background:rgba(217,164,65,.12)}
+
+main{max-width:1400px;margin:0 auto;padding:14px 20px 40px;
+  display:grid;grid-template-columns:1fr 460px;gap:18px;align-items:start}
+@media (max-width:1050px){ main{grid-template-columns:1fr} }
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.pad{padding:14px}
+
+input[type=search]{width:100%;background:var(--panel2);border:1px solid var(--line);
+  border-radius:9px;color:var(--text);padding:10px 12px;font-size:14px;outline:none;margin-top:10px}
+input[type=search]:focus{border-color:var(--gold)}
+
+.lbl{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#5c6673;
+  font-weight:600;margin:12px 0 6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{font-size:12px;padding:4px 10px;border-radius:999px;cursor:pointer;
+  background:var(--panel2);border:1px solid var(--line);color:var(--dim);user-select:none;
+  white-space:nowrap}
+.chip:hover{color:var(--text)}
+.chip.on{background:var(--gold);border-color:var(--gold);color:#101317;font-weight:700}
+.chip.on:hover{color:#101317}
+.chip.rad.on{background:var(--rad);border-color:var(--rad);color:#0c1a12}
+.chip.dir.on{background:var(--dir);border-color:var(--dir);color:#fff}
+
+/* сетка героев */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px;
+  max-height:calc(100vh - 480px);min-height:200px;overflow:auto;padding-right:4px;margin-top:10px}
+.agroup{grid-column:1/-1;font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;
+  color:#5c6673;font-weight:700;margin:10px 0 0;padding-left:2px}
+.agroup:first-child{margin-top:0}
+.hero{position:relative;cursor:pointer;border-radius:8px;overflow:hidden;
+  background:var(--panel2);border:1px solid var(--line);transition:transform .08s,border-color .08s}
+.hero:hover{transform:translateY(-2px);border-color:var(--gold)}
+.hero img{display:block;width:100%;aspect-ratio:1.5/1;object-fit:cover;background:#0a0d11}
+.hero .nm{font-size:10.5px;padding:3px 4px 4px;text-align:center;color:var(--dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hero.picked{opacity:.22;pointer-events:none;filter:grayscale(1)}
+.hero .fallback{display:none;width:100%;aspect-ratio:1.5/1;place-items:center;
+  font-size:20px;color:var(--dim);background:#0a0d11}
+.hero .pbadge{position:absolute;top:3px;right:3px;background:rgba(10,13,17,.8);
+  color:var(--dim);font-size:9.5px;font-weight:700;border-radius:4px;padding:0 3px;line-height:14px}
+.attr-str{border-bottom:2px solid #c94f4f} .attr-agi{border-bottom:2px solid #4fbf7a}
+.attr-int{border-bottom:2px solid #4fa8e8} .attr-all{border-bottom:2px solid #b06fd6}
+
+/* простой режим */
+.slots{display:flex;gap:8px;flex-wrap:wrap;min-height:60px;align-items:center}
+.slot{width:64px;height:44px;border-radius:7px;border:1px dashed var(--line);
+  background:rgba(255,255,255,.02);display:grid;place-items:center;color:#39424f;font-size:18px}
+.pick{position:relative;width:64px;cursor:pointer}
+.pick img{width:64px;height:44px;object-fit:cover;border-radius:7px;display:block;border:1px solid var(--line)}
+.pick .x{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;
+  background:var(--bad);color:#fff;font-size:12px;line-height:18px;text-align:center;
+  opacity:0;transition:opacity .1s}
+.pick:hover .x{opacity:1}
+.posbadge{position:absolute;left:3px;bottom:3px;background:rgba(10,13,17,.88);
+  border:1px solid var(--gold);color:var(--gold);font-size:10px;font-weight:700;
+  border-radius:5px;padding:0 4px;line-height:15px;cursor:pointer}
+.posbadge:hover{background:var(--gold);color:#111}
+
+/* капитанский режим */
+.cmstep{font-size:12.5px;color:var(--dim);margin-bottom:9px;display:flex;
+  justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.cmstep b{color:var(--text)}
+.cmstep .tag{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:700}
+.cmstep .tag.ban{background:rgba(224,87,91,.15);color:#e0575b;border:1px solid rgba(224,87,91,.4)}
+.cmstep .tag.pick{background:rgba(79,191,122,.15);color:#4fbf7a;border:1px solid rgba(79,191,122,.4)}
+.cmstep .tag.done{background:var(--panel2);color:var(--dim);border:1px solid var(--line)}
+.cmteams{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cmteam{border:1px solid var(--line);border-radius:9px;padding:7px 8px;background:var(--panel2)}
+.cmteam.active{border-color:var(--gold);box-shadow:inset 0 0 0 1px rgba(217,164,65,.25);
+  background:rgba(217,164,65,.05)}
+.cmteam h4{margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:.3px;
+  display:flex;justify-content:space-between;align-items:baseline}
+.cmteam.rad h4{color:var(--rad)} .cmteam.dir h4{color:var(--dir)}
+.cmteam h4 span{font-size:9.5px;font-weight:400;color:#5c6673}
+.cmpicks{display:flex;gap:3px}
+.cmpick{width:34px;height:23px;border-radius:4px;object-fit:cover;background:#0a0d11;display:block}
+.cmpick.empty{border:1px dashed var(--line);background:rgba(255,255,255,.02)}
+.cmbans{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;min-height:17px}
+.cmban{width:22px;height:15px;border-radius:3px;object-fit:cover;opacity:.4;filter:grayscale(1)}
+.cmnone{font-size:9.5px;color:#39424f}
+.cmtools{display:flex;gap:6px;margin-top:9px}
+.cmtools button{flex:1;font-size:11.5px;padding:5px 8px;border-radius:7px;cursor:pointer;
+  background:var(--panel2);border:1px solid var(--line);color:var(--dim)}
+.cmtools button:hover{color:var(--text);border-color:var(--gold)}
+.cmtools button:disabled{opacity:.35;cursor:default;border-color:var(--line);color:var(--dim)}
+
+/* выдача */
+.res{margin-top:6px;display:flex;flex-direction:column;gap:6px;max-height:44vh;overflow:auto}
+.sect{margin-top:12px}
+.sect h3{font-size:11px;letter-spacing:.5px;color:#5c6673;text-transform:uppercase;
+  margin:0 0 5px 2px;font-weight:600}
+.row{display:flex;gap:10px;align-items:center;background:var(--panel2);
+  border:1px solid var(--line);border-radius:9px;padding:7px 9px}
+.row .ico{width:56px;height:38px;border-radius:6px;object-fit:cover;flex:none;background:#0a0d11}
+.row .body{flex:1;min-width:0}
+.row .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.row .name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .score{font-variant-numeric:tabular-nums;font-weight:700;color:var(--good);font-size:14px}
+.row .score.low{color:var(--dim)}
+.row .score.bad{color:var(--bad)}
+.row .parts{display:flex;flex-wrap:wrap;gap:3px 8px;margin-top:2px}
+.part{font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums}
+.part b{font-weight:600}
+.part.pos b{color:#5cc98a} .part.neg b{color:#d97074}
+.rel{font-size:10px;color:#5c6673;margin-top:2px}
+.rel i{font-style:normal;color:#7d8797}
+.empty{color:var(--dim);font-size:13px;padding:18px 2px;text-align:center}
+.note{font-size:11.5px;color:#5c6673;line-height:1.5;margin-top:14px}
+.note b{color:var(--dim)}
+.hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.hdr h2{font-size:13px;margin:0;color:var(--dim);font-weight:600;text-transform:uppercase;
+  letter-spacing:.6px}
+.clear{font-size:12px;color:var(--dim);cursor:pointer;background:none;border:none}
+.clear:hover{color:var(--gold)}
+::-webkit-scrollbar{width:9px} ::-webkit-scrollbar-thumb{background:#2b3540;border-radius:5px}
