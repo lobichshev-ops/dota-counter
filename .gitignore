@@ -6,3 +6,7 @@ __pycache__/
 .DS_Store
 .token
 *.token
+_patch742_ru.json
+_ability_ids.json
+_tr_cache.json
+_d2pt_742.html

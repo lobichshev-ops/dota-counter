@@ -24,6 +24,7 @@
     <button class="tab on" data-tab="mech">Изменения механик</button>
     <button class="tab" data-tab="buff">Усиления героев</button>
     <button class="tab" data-tab="nerf">Ослабление героев</button>
+    <button class="tab" data-tab="all">Все герои</button>
     <button class="tab" data-tab="none">Не тронутые</button>
     <button class="tab" data-tab="meta">Предполагаемая мета</button>
   </div>
@@ -167,7 +168,19 @@
     </div>
   </section>
 
-  <!-- ================= 4. НЕ ТРОНУТЫЕ ================= -->
+  <!-- ================= 4. ВСЕ ГЕРОИ ================= -->
+  <section class="panel" id="panel-all">
+    <div class="pcard">
+      <div class="msec">
+        <h2>Все изменения по героям</h2>
+        <div class="verdict" id="allNote"></div>
+        <input type="search" id="allQ" placeholder="Поиск: имя героя или текст изменения…" autocomplete="off">
+        <div class="hlist" id="allList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 5. НЕ ТРОНУТЫЕ ================= -->
   <section class="panel" id="panel-none">
     <div class="pcard">
       <div class="msec">
@@ -193,6 +206,7 @@
 
 </main>
 
+<script src="patch742.js"></script>
 <script src="data.js"></script>
 <script>
 (function(){
@@ -527,10 +541,41 @@
     $("nerfList").innerHTML = NERFS.map(h => card(h, true)).join("");
     const note = n => '<div class="big">Выборочно: <b>' + n + ' из 127</b> изменённых героев.</div>' +
       'Если твоего героя тут нет — это значит, что его правки мельче, а не что его не тронули: ' +
-      'в 7.42 менялись все 127. Полный разбор по каждому герою — ' +
-      'dota2protracker.com/patches/7.42.';
+      'в 7.42 менялись все 127. Полный список по каждому герою — во вкладке «Все герои».';
     $("buffNote").innerHTML = note(BUFFS.length);
     $("nerfNote").innerHTML = note(NERFS.length);
+  }
+
+  /* ---------- все герои ---------- */
+
+  const FULL = (window.PATCH742 && window.PATCH742.heroes) || [];
+
+  function allCard(h){
+    const slug = SLUG.get(h.n);
+    const body = h.g.map(g =>
+      '<div class="dgrp"><div class="dt">' + g.t + '</div><ul>' +
+      g.items.map(x => '<li>' + x + '</li>').join("") + '</ul></div>').join("");
+    const text = (h.n + " " + h.g.map(g => g.t + " " + g.items.join(" ")).join(" ")).toLowerCase();
+    return '<details class="hdet" data-q="' + text.replace(/"/g, "&quot;") + '">' +
+      '<summary>' + (slug ? '<img loading="lazy" src="img/' + slug + '.webp" alt="' + h.n + '">' : '') +
+      '<span class="hn">' + h.n + '</span><span class="cnt">' + h.c + '</span></summary>' +
+      '<div class="dbody">' + body + '</div></details>';
+  }
+
+  function renderAll(){
+    const total = FULL.reduce((s, h) => s + h.c, 0);
+    $("allNote").innerHTML =
+      '<div class="big">Весь патч: <b>' + FULL.length + ' героев</b>, ' + total + ' правок.</div>' +
+      'Полный перевод официальных патчноутов 7.42, включая статы, таланты и способности. ' +
+      'Строки, которые Valve ещё не перевёл на русский, переведены автоматически: цифры сверены ' +
+      'с оригиналом, а формулировки местами шершавые.';
+    $("allList").innerHTML = FULL.map(allCard).join("");
+    $("allQ").oninput = () => {
+      const q = $("allQ").value.trim().toLowerCase();
+      document.querySelectorAll("#allList .hdet").forEach(el => {
+        el.style.display = (!q || el.dataset.q.includes(q)) ? "" : "none";
+      });
+    };
   }
 
   function renderNone(){
@@ -590,6 +635,7 @@
   });
 
   renderLists();
+  renderAll();
   renderNone();
   renderPosChips();
   renderMeta();
