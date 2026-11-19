@@ -549,6 +549,8 @@
   /* ---------- все герои ---------- */
 
   const FULL = (window.PATCH742 && window.PATCH742.heroes) || [];
+  const LAB = { up: "усиление", sup: "небольшое усиление", flat: "нейтрально",
+                sdown: "небольшое ослабление", down: "ослабление" };
 
   function allCard(h){
     const slug = SLUG.get(h.n);
@@ -556,9 +558,14 @@
       '<div class="dgrp"><div class="dt">' + g.t + '</div><ul>' +
       g.items.map(x => '<li>' + x + '</li>').join("") + '</ul></div>').join("");
     const text = (h.n + " " + h.g.map(g => g.t + " " + g.items.join(" ")).join(" ")).toLowerCase();
+    const lv = h.v || "flat";
+    const tip = h.o ? "оценка по разбору вручную"
+      : (h.p === undefined ? "" : "правок в плюс: " + h.p + ", в минус: " + h.m);
     return '<details class="hdet" data-q="' + text.replace(/"/g, "&quot;") + '">' +
       '<summary>' + (slug ? '<img loading="lazy" src="img/' + slug + '.webp" alt="' + h.n + '">' : '') +
-      '<span class="hn">' + h.n + '</span><span class="cnt">' + h.c + '</span></summary>' +
+      '<span class="hn">' + h.n + '</span>' +
+      '<span class="v ' + lv + '" title="' + tip + '">' + LAB[lv] + '</span>' +
+      '<span class="cnt" title="правок в патче">' + h.c + '</span></summary>' +
       '<div class="dbody">' + body + '</div></details>';
   }
 
@@ -568,7 +575,11 @@
       '<div class="big">Весь патч: <b>' + FULL.length + ' героев</b>, ' + total + ' правок.</div>' +
       'Полный перевод официальных патчноутов 7.42, включая статы, таланты и способности. ' +
       'Строки, которые Valve ещё не перевёл на русский, переведены автоматически: цифры сверены ' +
-      'с оригиналом, а формулировки местами шершавые.';
+      'с оригиналом, а формулировки местами шершавые.<br><br>' +
+      '<b>Ярлыки.</b> «Усиление» и «ослабление» — это оценка по правкам, а не по винрейтам: ' +
+      'у героев с разбором (вкладки «Усиления» и «Ослабление») ярлык выставлен вручную, ' +
+      'у остальных — по перевесу плюсов и минусов в списке изменений. Наведи на ярлык, ' +
+      'чтобы увидеть, сколько правок в плюс и сколько в минус.';
     $("allList").innerHTML = FULL.map(allCard).join("");
     $("allQ").oninput = () => {
       const q = $("allQ").value.trim().toLowerCase();

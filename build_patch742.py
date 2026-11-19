@@ -151,6 +151,19 @@ for h in patch.get("heroes", []):
                    "c": sum(len(g["items"]) for g in groups), "g": groups})
 
 heroes.sort(key=lambda x: x["n"])
+
+# ярлыки усиление/ослабление (см. classify.py)
+labels = {}
+if os.path.exists(os.path.join(HERE, "_labels.json")):
+    labels = json.load(open(os.path.join(HERE, "_labels.json"), encoding="utf-8"))
+for x in heroes:
+    lab = labels.get(str(x["id"]))
+    if lab:
+        x["v"] = lab["l"]
+        if lab.get("o"):
+            x["o"] = 1
+        else:
+            x["p"], x["m"] = lab["p"], lab["m"]
 js = "window.PATCH742 = " + json.dumps(
     {"patch": patch.get("patch_number"), "heroes": heroes},
     ensure_ascii=False, separators=(",", ":")) + ";\n"
