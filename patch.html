@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Разбор патча 7.42 — Dota 2</title>
-<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="app.css?v=3">
 </head>
 <body>
 
@@ -563,8 +563,8 @@
       : (h.p === undefined ? "" : "правок в плюс: " + h.p + ", в минус: " + h.m);
     return '<details class="hdet" data-q="' + text.replace(/"/g, "&quot;") + '">' +
       '<summary>' + (slug ? '<img loading="lazy" src="img/' + slug + '.webp" alt="' + h.n + '">' : '') +
-      '<span class="hn">' + h.n + '</span>' +
-      '<span class="v ' + lv + '" title="' + tip + '">' + LAB[lv] + '</span>' +
+      '<span class="hinfo"><span class="hname">' + h.n + '</span>' +
+      '<span class="v ' + lv + '" title="' + tip + '">' + LAB[lv] + '</span></span>' +
       '<span class="cnt" title="правок в патче">' + h.c + '</span></summary>' +
       '<div class="dbody">' + body + '</div></details>';
   }
