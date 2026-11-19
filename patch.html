@@ -148,6 +148,7 @@
     <div class="pcard">
       <div class="msec">
         <h2>Кого усилили</h2>
+        <div class="verdict" id="buffNote"></div>
         <div class="hcards" id="buffList"></div>
         <div class="pnote"><b>Как читать:</b> карточка — герой и ключевые изменения, которые тянут его вверх. Метка «реворк» значит, что способность или врождёнка переделана: часть свойств потеряна, часть появилась.</div>
       </div>
@@ -159,6 +160,7 @@
     <div class="pcard">
       <div class="msec">
         <h2>Кого ослабили</h2>
+        <div class="verdict" id="nerfNote"></div>
         <div class="hcards" id="nerfList"></div>
         <div class="pnote"><b>Важно:</b> почти всем героям заодно порезали урон способностей — это общий фон патча, а не отдельная правка. В карточках — то, что бьёт по герою сильнее всего.</div>
       </div>
@@ -394,6 +396,14 @@
     { n:"Tinker", t:"dn", tt:"ослабление", b:[
       "Скептр: снижение текущего и максимального HP 13% → 9%.",
       "March of the Machines больше не рутит, а замедляет на 100% (длительность 2 → 3с)."
+    ]},
+    { n:"Invoker", t:"dn", tt:"ослабление", b:[
+      "Sun Strike: урон 175–575 → <b>175–495</b>, на последнем уровне минус 80.",
+      "Chaos Meteor: горение 10–50 → 12–44 в секунду — сильнее в начале, слабее в лейте.",
+      "Deafening Blast: дизарм теперь снимается диспелом.",
+      "Талант 10-го: урон Ice Wall +50 → +40.",
+      "Плюс только один — шард: множитель урона Ice Wall 1× → 1.25×.",
+      "Таланты 20 и 25 поменяли местами: +2 Chaos Meteors и 2× Quas/Wex/Exort."
     ]}
   ];
 
@@ -515,6 +525,12 @@
   function renderLists(){
     $("buffList").innerHTML = BUFFS.map(h => card(h, true)).join("");
     $("nerfList").innerHTML = NERFS.map(h => card(h, true)).join("");
+    const note = n => '<div class="big">Выборочно: <b>' + n + ' из 127</b> изменённых героев.</div>' +
+      'Если твоего героя тут нет — это значит, что его правки мельче, а не что его не тронули: ' +
+      'в 7.42 менялись все 127. Полный разбор по каждому герою — ' +
+      'dota2protracker.com/patches/7.42.';
+    $("buffNote").innerHTML = note(BUFFS.length);
+    $("nerfNote").innerHTML = note(NERFS.length);
   }
 
   function renderNone(){
