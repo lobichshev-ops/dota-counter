@@ -47,7 +47,7 @@ def check_js():
         ok = ok and r.returncode == 0
 
     tmp = os.path.join(HERE, "_syntax_check.js")
-    for page in ("index.html", "cm.html"):
+    for page in ("index.html", "cm.html", "patch.html"):
         p = os.path.join(HERE, page)
         if not os.path.exists(p):
             print(f"{page}: файла нет")
